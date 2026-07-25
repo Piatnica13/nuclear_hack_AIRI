@@ -1,0 +1,40 @@
+{
+  "model_type": "UNet_Autoencoder",
+  "in_channels": 8,
+  "latent_channels": 4,
+  "downsample_factor": 8,
+  "quantization": "uint8",
+  "entropy_coding": "zstandard_level_6",
+  "normalization": {
+    "X_min": [
+      -25.5509033203125,
+      0.0,
+      -26.583511352539062,
+      215.09121704101562,
+      0.1685916781425476,
+      270.052978515625,
+      0.0,
+      94649.5625
+    ],
+    "X_max": [
+      31.859756469726562,
+      0.015114307403564453,
+      24.820144653320312,
+      317.55950927734375,
+      77.25062561035156,
+      9999.0,
+      1.0,
+      106123.5
+    ]
+  },
+  "available_vars": [
+    "10 metre U wind component",
+    "Time-mean total precipitation rate",
+    "10 metre V wind component",
+    "2 metre temperature",
+    "Total column vertically-integrated water vapour",
+    "Sea surface temperature",
+    "Total cloud cover",
+    "Mean sea level pressure"
+  ]
+}
