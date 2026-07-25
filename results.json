@@ -1,0 +1,21 @@
+{
+  "model": "WeatherVAE",
+  "compression": {
+    "ratio": 64.08888888888889,
+    "bits_per_dim": 0.49930651872399445,
+    "latent_dim": 4,
+    "downsample_factor": 8
+  },
+  "metrics": {
+    "NRMSE_mean": 0.011048146425817114,
+    "NRMSE_std": 0.0003997780488200893,
+    "NRMSE_per_field": {
+      "t2m": 0.011048146425817114
+    }
+  },
+  "resources": {
+    "peak_vram_gb": 12.488673210144043,
+    "epochs": 15,
+    "batch_size": 1
+  }
+}
