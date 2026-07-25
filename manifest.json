@@ -1,0 +1,402 @@
+[
+  {
+    "timestamp": "slot_0000",
+    "filename": "slot_0000.bin",
+    "size_bytes": 43993,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4893278476121201,
+    "sha256": "73275352f4a2d31cf0bd2517a56148b1be6a7e585a59f064fc600efe041731a2",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0001",
+    "filename": "slot_0001.bin",
+    "size_bytes": 43984,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4896325936704256,
+    "sha256": "a97969724bf32b70feaef81284d77d211d333e045d6a19179379e77686f21946",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0002",
+    "filename": "slot_0002.bin",
+    "size_bytes": 44139,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4844015496499694,
+    "sha256": "ee976d170bad09b9670ed35ef75005d979682b1a7cb5117569a5ac312a1eec9c",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0003",
+    "filename": "slot_0003.bin",
+    "size_bytes": 44061,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.487029345679853,
+    "sha256": "b0699bf1586f0e9dad2240fdd64b3fe08df3cedc48c4a6c6884fd3b468680fe5",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0004",
+    "filename": "slot_0004.bin",
+    "size_bytes": 44079,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4864221057646498,
+    "sha256": "6833b9888af7e91621ed3905c9421656ac7542f23bb880f6e835bf627f66b4bc",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0005",
+    "filename": "slot_0005.bin",
+    "size_bytes": 44179,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4830575612847734,
+    "sha256": "6c5877c8481c0efe96b5a659ac269fd6c2b11612121a6eb7fff1f35b3a95e694",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0006",
+    "filename": "slot_0006.bin",
+    "size_bytes": 44069,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4867594000317683,
+    "sha256": "a2fb4d45cf21d7374469eb9d9af9f78904bbcbdc265d29a003b25786a89dc1f2",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0007",
+    "filename": "slot_0007.bin",
+    "size_bytes": 44258,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4804103212978446,
+    "sha256": "ac09b094c5699225aa59a751723b8804f325df54b76a83d35f592d5fcc920a91",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0008",
+    "filename": "slot_0008.bin",
+    "size_bytes": 44228,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4814144885592837,
+    "sha256": "238bdf1a9ef0d8f8d90b34d4b83499b0d127819dcb6362085738afd854975701",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0009",
+    "filename": "slot_0009.bin",
+    "size_bytes": 44178,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4830911313323374,
+    "sha256": "aff4b6aa9ab0f64e4f6ea7eeb0759ced549d816e3613dab09df20dfd55abd5cc",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0010",
+    "filename": "slot_0010.bin",
+    "size_bytes": 44169,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4833933301636895,
+    "sha256": "f33e82ce41cd04337b3133dbda683bc3b7fe257d102586b937eb938139487a78",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0011",
+    "filename": "slot_0011.bin",
+    "size_bytes": 44066,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4868606181636637,
+    "sha256": "5861451453f0054f009bde2222fe051bcaeffddd9d056678e561e41b7cc765b8",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0012",
+    "filename": "slot_0012.bin",
+    "size_bytes": 44156,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4838300570703868,
+    "sha256": "4fcd4286fe597cba89f78ccbe7330cf8a4cdcdf80e50ad9ec102eec12571ad6f",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0013",
+    "filename": "slot_0013.bin",
+    "size_bytes": 44233,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4812470327583478,
+    "sha256": "87343b0d741e6fd7d686cc3c77d3c7c2b1dd513f8080f04d0ee69d7a6ae946ec",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0014",
+    "filename": "slot_0014.bin",
+    "size_bytes": 44247,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4807783578547697,
+    "sha256": "5ecaf5f4764b6729198ffa9cc148ef0159fb238ede1180803dcd5f12b11277cb",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0015",
+    "filename": "slot_0015.bin",
+    "size_bytes": 44214,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.48188356629122,
+    "sha256": "f10b95874af9b2487fdf18d31b1f533803b1f9373c83e6dab970942891049427",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0016",
+    "filename": "slot_0016.bin",
+    "size_bytes": 44305,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4788398600609411,
+    "sha256": "8cc44b0f5562bb6ab92194b29b3b4daff7aa6aa6b47ab769686a6ef285182470",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0017",
+    "filename": "slot_0017.bin",
+    "size_bytes": 44223,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4815819822264433,
+    "sha256": "ee41ddc5ff854ef79c73fd36fedd8dc994b4a6f5eab589d2325b2b414c390fcd",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0018",
+    "filename": "slot_0018.bin",
+    "size_bytes": 44344,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4775392386794155,
+    "sha256": "9171c531e7de880bb8192a42336cc62a3785ce3d8f23974493375f9c35c00949",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  },
+  {
+    "timestamp": "slot_0019",
+    "filename": "slot_0019.bin",
+    "size_bytes": 44197,
+    "raw_bytes": 65520,
+    "compression_ratio": 1.4824535601963935,
+    "sha256": "c8612b14f9b8274145dae0e2a7ff3992afc9dc5ffa88e8bd685d924888175e6b",
+    "latent_shape": [
+      1,
+      4,
+      91,
+      180
+    ],
+    "original_shape": [
+      1,
+      8,
+      721,
+      1440
+    ]
+  }
+]

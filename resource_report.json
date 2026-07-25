@@ -1,0 +1,16 @@
+{
+  "resources": {
+    "peak_vram_gb": 3.4714040756225586,
+    "optimization_steps": 1200,
+    "gpu_hours": 4.1656848907470705,
+    "total_bitstreams": 20,
+    "total_size_mb": 0.8424015045166016,
+    "compression_ratio": 752.2439155823132,
+    "bits_per_dim": 0.04253939358915087
+  },
+  "metrics_summary": {
+    "nrmse_mean": 0.013819176700725137,
+    "nrmse_95ci": "[0.0135, 0.0142]",
+    "s_all": 0.9861808232992748
+  }
+}
