@@ -1,0 +1,39 @@
+{
+  "model_type": "UNet_Autoencoder",
+  "in_channels": 8,
+  "latent_channels": 4,
+  "downsample_factor": 8,
+  "quantization": "uint8",
+  "normalization": {
+    "X_min": [
+      -25.5509033203125,
+      0.0,
+      270.052978515625,
+      -26.583511352539062,
+      0.1685916781425476,
+      0.0,
+      215.09121704101562,
+      94649.5625
+    ],
+    "X_max": [
+      31.859756469726562,
+      0.015114307403564453,
+      9999.0,
+      24.820144653320312,
+      77.25062561035156,
+      1.0,
+      317.55950927734375,
+      106123.5
+    ]
+  },
+  "available_vars": [
+    "10 metre U wind component",
+    "Time-mean total precipitation rate",
+    "Sea surface temperature",
+    "10 metre V wind component",
+    "Total column vertically-integrated water vapour",
+    "Total cloud cover",
+    "2 metre temperature",
+    "Mean sea level pressure"
+  ]
+}
