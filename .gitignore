@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+.pytest_cache/
+
+era5_28ch_0p25_6h.zarr/
+
+predictions/
+
+mlflow.db
+results/
+*.png
+*.jpg
+*.zarr/
+*.nc

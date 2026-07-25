@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Results
+results/
+visual/
+vizual/
+*.png
+*.jpg
+
+# Large datasets
+*.zarr/
+*.nc
+*.npy
+*.npz
+
+# Models (если скачиваются отдельно)
+models/*.pth
+
+# Cache
+.cache/
+.pytest_cache/

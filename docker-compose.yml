@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+
+    container_name: autoencoder
+
+    working_dir: /app
+
+    volumes:
+      - .:/app
+
+    ports:
+      - "5000:5000"
+
+    stdin_open: true
+    tty: true
+
+    shm_size: "8gb"
+
+    environment:
+      - PYTHONUNBUFFERED=1
+
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
