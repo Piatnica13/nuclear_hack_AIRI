@@ -1,0 +1,44 @@
+{
+  "model": "UNet_Autoencoder",
+  "architecture": {
+    "type": "UNet",
+    "encoder_channels": [
+      32,
+      64,
+      128,
+      256
+    ],
+    "latent_channels": 4,
+    "downsample_factor": 8,
+    "total_params_millions": 1.995852,
+    "skip_connections": true
+  },
+  "compression": {
+    "ratio": 512.7111111111111,
+    "bits_per_dim": 0.06241331484049931,
+    "latent_dim": 4,
+    "downsample_factor": 8
+  },
+  "metrics": {
+    "NRMSE_mean": 0.013819176700725137,
+    "NRMSE_std": 0.0005520041032851731,
+    "S_all": 0.9861808232992748,
+    "S_surface": 0.9861808232992748,
+    "NRMSE_per_field": {
+      "10 metre U wind component": 0.011796833768503894,
+      "Time-mean total precipitation rate": 0.021737271882551035,
+      "10 metre V wind component": 0.01202433980693204,
+      "2 metre temperature": 0.011890542879292431,
+      "Total column vertically-integrated water vapour": 0.011183217728607113,
+      "Sea surface temperature": 0.009756572951406847,
+      "Total cloud cover": 0.023159146636101004,
+      "Mean sea level pressure": 0.009005487952406716
+    }
+  },
+  "resources": {
+    "peak_vram_gb": 3.4714040756225586,
+    "epochs": 15,
+    "batch_size": 1,
+    "grid_size": "721x1440"
+  }
+}
