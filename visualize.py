@@ -1,13 +1,20 @@
+import math
 import os
 
 import matplotlib.pyplot as plt
 import torch
 
+from config import DEVICE
 from dataset import create_dataloader
-from metrics import rmse, mae
-from model import AutoEncoder, DEVICE
+from metrics import rmse, mae, psnr
+from model import AutoEncoder
 
-os.makedirs("results_images", exist_ok=True)
+RESULT_DIR = "results"
+
+os.makedirs(
+    RESULT_DIR,
+    exist_ok=True,
+)
 
 
 def visualize(model_path, limit, samples=2):
@@ -15,20 +22,28 @@ def visualize(model_path, limit, samples=2):
     dataset, _ = create_dataloader(limit)
 
     model = AutoEncoder().to(DEVICE)
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+
+    state_dict = torch.load(
+        model_path,
+        map_location=DEVICE,
+        weights_only=True,
+    )
+
+    model.load_state_dict(state_dict)
+
     model.eval()
 
-    with torch.no_grad():
-        image, _ = dataset[0]
-        model(image.unsqueeze(0).to(DEVICE))
-
-    indices = torch.randperm(len(dataset))[:samples]
+    indices = torch.randperm(
+        len(dataset)
+    )[:samples]
 
     with torch.no_grad():
 
         for idx in indices:
 
-            image, _ = dataset[idx]
+            sample = dataset[idx]
+
+            image = sample[0]
 
             image_gpu = image.unsqueeze(0).to(
                 DEVICE,
@@ -37,26 +52,69 @@ def visualize(model_path, limit, samples=2):
 
             output_gpu = model(image_gpu)
 
-            batch_rmse = rmse(output_gpu, image_gpu).item()
-            batch_mae = mae(output_gpu, image_gpu).item()
+            batch_rmse = rmse(
+                output_gpu,
+                image_gpu,
+            ).item()
+
+            batch_mae = mae(
+                output_gpu,
+                image_gpu,
+            ).item()
+
+            batch_psnr = psnr(
+                output_gpu,
+                image_gpu,
+            ).item()
 
             image = image_gpu.squeeze().cpu()
             output = output_gpu.squeeze().cpu()
-            error = torch.abs(image - output)
 
-            fig, axes = plt.subplots(
-                7,
-                12,
-                figsize=(28, 18),
+            error = torch.abs(
+                image - output
             )
 
-            for ch in range(28):
+            channels = image.shape[0]
 
-                row = ch // 4
-                col = (ch % 4) * 3
+            channels_per_row = 4
+            columns_per_channel = 3
+
+            rows = math.ceil(
+                channels / channels_per_row
+            )
+
+            cols = (
+                channels_per_row
+                * columns_per_channel
+            )
+
+            fig, axes = plt.subplots(
+                rows,
+                cols,
+                figsize=(
+                    cols * 2.5,
+                    rows * 2.8,
+                ),
+            )
+
+            if rows == 1:
+                axes = axes.reshape(
+                    1,
+                    -1,
+                )
+
+            for ch in range(channels):
+
+                row = ch // channels_per_row
+
+                col = (
+                    ch % channels_per_row
+                ) * columns_per_channel
 
                 original = image[ch]
+
                 recon = output[ch]
+
                 err = error[ch]
 
                 vmin = min(
@@ -75,7 +133,10 @@ def visualize(model_path, limit, samples=2):
                     vmin=vmin,
                     vmax=vmax,
                 )
-                axes[row, col].set_title(f"Ch {ch}")
+                axes[row, col].set_title(
+                    f"Ch {ch}",
+                    fontsize=9,
+                )
                 axes[row, col].axis("off")
 
                 axes[row, col + 1].imshow(
@@ -84,26 +145,44 @@ def visualize(model_path, limit, samples=2):
                     vmin=vmin,
                     vmax=vmax,
                 )
-                axes[row, col + 1].set_title("Recon")
+                axes[row, col + 1].set_title(
+                    "Recon",
+                    fontsize=9,
+                )
                 axes[row, col + 1].axis("off")
 
-                axes[row, col + 2].imshow(
+                im = axes[row, col + 2].imshow(
                     err,
                     cmap="inferno",
                 )
-                axes[row, col + 2].set_title("Error")
+                axes[row, col + 2].set_title(
+                    "Error",
+                    fontsize=9,
+                )
                 axes[row, col + 2].axis("off")
+
+                fig.colorbar(
+                    im,
+                    ax=axes[row, col + 2],
+                    fraction=0.046,
+                    pad=0.04,
+                )
 
             fig.suptitle(
                 f"Sample {idx.item()}\n"
-                f"Compression: {model.compression_ratio:.2f}x\n"
-                f"RMSE={batch_rmse:.4f}    MAE={batch_mae:.4f}",
-                fontsize=20,
+                f"Patch size: {image.shape[1]} x {image.shape[2]}\n"
+                f"RMSE = {batch_rmse:.5f}    "
+                f"MAE = {batch_mae:.5f}    "
+                f"PSNR = {batch_psnr:.2f} dB",
+                fontsize=18,
             )
 
             plt.tight_layout()
 
-            filename = f"results/sample_{idx.item()}.png"
+            filename = os.path.join(
+                RESULT_DIR,
+                f"sample_{idx.item()}.png",
+            )
 
             plt.savefig(
                 filename,
@@ -111,15 +190,17 @@ def visualize(model_path, limit, samples=2):
                 bbox_inches="tight",
             )
 
-            plt.close()
+            plt.close(fig)
 
-            print(f"Saved -> {filename}")
+            print(
+                f"Saved -> {filename}"
+            )
 
 
 if __name__ == "__main__":
 
     visualize(
-        model_path="models/autoencoder_512.pth",
+        model_path="models/autoencoder_50.pth",
         limit=512,
         samples=2,
     )

@@ -1,12 +1,15 @@
 import torch
 import torch.nn.functional as F
 
-from config import IMAGE_HEIGHT
+from config import (
+    IMAGE_HEIGHT,
+    IN_CHANNELS,
+    EPS,
+    SURFACE_CHANNELS,
+    PRESSURE_CHANNELS,
+    CHANNEL_STDS,
+)
 
-EPS = 1e-8
-
-SURFACE = slice(0, 8)
-PRESSURE = slice(8, 28)
 
 # =====================================================
 # Latitude weights
@@ -44,13 +47,8 @@ def psnr(pred, target):
 # Helpers
 # =====================================================
 
-def _channel_std(target):
-    """
-    sigma_f,train (приближение).
-    Вместо train-датасета используется target.
-    """
-
-    return target.std(dim=(0, 2, 3)).clamp(min=EPS)
+def _channel_std(device):
+    return CHANNEL_STDS.to(device)
 
 
 # =====================================================
@@ -64,24 +62,31 @@ def channel_nrmse(pred, target):
     error2 = (pred - target) ** 2
 
     weighted_error = (error2 * weights).sum(dim=(0, 2, 3))
-    weighted_norm = weights.sum() * pred.shape[0] * pred.shape[3]
+    weighted_norm = (
+        weights.sum()
+        * pred.shape[0]
+        * pred.shape[3]
+    )
 
-    weighted_rmse = torch.sqrt(weighted_error / weighted_norm + EPS)
+    weighted_rmse = torch.sqrt(
+        weighted_error / weighted_norm + EPS
+    )
 
-    sigma = _channel_std(target)
+    sigma = _channel_std(pred.device)
 
     return weighted_rmse / sigma
 
 
 def surface_score(pred, target):
-    return channel_nrmse(pred, target)[SURFACE].mean()
+    return channel_nrmse(pred, target)[SURFACE_CHANNELS].mean()
 
 
 def pressure_score(pred, target):
-    return channel_nrmse(pred, target)[PRESSURE].mean()
+    return channel_nrmse(pred, target)[PRESSURE_CHANNELS].mean()
 
 
 def overall_score(pred, target):
+
     return (
         0.5 * surface_score(pred, target)
         + 0.5 * pressure_score(pred, target)
@@ -96,27 +101,31 @@ def metrics(pred, target):
 
     nrmse = channel_nrmse(pred, target)
 
+    surface = nrmse[SURFACE_CHANNELS].mean()
+    pressure = nrmse[PRESSURE_CHANNELS].mean()
+
     result = {
+
         "mse": mse(pred, target).item(),
         "rmse": rmse(pred, target).item(),
         "mae": mae(pred, target).item(),
         "psnr": psnr(pred, target).item(),
 
-        "surface_score": nrmse[SURFACE].mean().item(),
-        "pressure_score": nrmse[PRESSURE].mean().item(),
+        "surface_score": surface.item(),
+        "pressure_score": pressure.item(),
+
         "overall_score": (
-            0.5 * nrmse[SURFACE].mean()
-            + 0.5 * nrmse[PRESSURE].mean()
+            0.5 * surface
+            + 0.5 * pressure
         ).item(),
 
         "overall_nrmse": nrmse.mean().item(),
     }
 
-    for i in range(28):
+    for i in range(IN_CHANNELS):
         result[f"nrmse_ch_{i:02d}"] = nrmse[i].item()
 
     return result
-
 
 
 def compute_rmse(pred, target):

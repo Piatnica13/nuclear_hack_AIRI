@@ -5,17 +5,30 @@ import time
 import mlflow
 import torch
 
+from tqdm import tqdm
+
 from config import (
+    DEVICE,
     LEARNING_RATE,
     EPOCHS,
     MODELS_DIR,
     LOGS_DIR,
     PATCH_SIZE,
+    WEIGHT_DECAY,
+    MIN_LEARNING_RATE,
+    LOG_EVERY_STEPS,
+    LOSS_NAME,
+    EXPERIMENT_DATASET_SIZES,
 )
 
 from dataset import create_dataloader
-from metrics import metrics
-from model import AutoEncoder, DEVICE
+from losses import get_loss
+from metrics import (
+    compute_rmse,
+    mae,
+    psnr,
+)
+from model import AutoEncoder
 
 mlflow.set_tracking_uri("sqlite:///mlflow.db")
 mlflow.set_experiment("ERA5-28ch-AutoEncoder-plus")
@@ -23,31 +36,36 @@ mlflow.set_experiment("ERA5-28ch-AutoEncoder-plus")
 
 def train(limit):
 
-    dataset, loader = create_dataloader(limit)
+    dataset, loader = create_dataloader(train=True, limit=limit)
 
     model = AutoEncoder().to(DEVICE)
 
     optimizer = torch.optim.AdamW(
         model.parameters(),
         lr=LEARNING_RATE,
-        weight_decay=1e-5,
+        weight_decay=WEIGHT_DECAY,
     )
 
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer,
         T_max=EPOCHS,
-        eta_min=LEARNING_RATE / 100,
+        eta_min=MIN_LEARNING_RATE,
     )
 
     scaler = torch.amp.GradScaler(
         "cuda",
-        enabled=False,
+        enabled=DEVICE.type == "cuda",
     )
 
-    criterion = torch.nn.MSELoss()
+    criterion = get_loss(LOSS_NAME)
 
     os.makedirs(
         LOGS_DIR,
+        exist_ok=True,
+    )
+
+    os.makedirs(
+        MODELS_DIR,
         exist_ok=True,
     )
 
@@ -71,14 +89,15 @@ def train(limit):
             "train_loss",
             "val_loss_quick",
             "val_rmse_quick",
-            "val_nrmse_quick",
+            "val_mae_quick",
         ],
     )
 
     writer.writeheader()
 
-    quick_images, _ = next(iter(loader))
-    quick_images = quick_images.to(
+    monitor_batch, _ = next(iter(loader))
+
+    monitor_batch = monitor_batch.to(
         DEVICE,
         non_blocking=True,
     )
@@ -88,13 +107,35 @@ def train(limit):
 
     with mlflow.start_run():
 
-        mlflow.log_param("dataset_size", len(dataset))
-        mlflow.log_param("epochs", EPOCHS)
-        mlflow.log_param("batch_size", loader.batch_size)
-        mlflow.log_param("learning_rate", LEARNING_RATE)
-        mlflow.log_param("patch_size", PATCH_SIZE)
+        mlflow.log_param(
+            "dataset_size",
+            len(dataset),
+        )
 
-        first = True
+        mlflow.log_param(
+            "epochs",
+            EPOCHS,
+        )
+
+        mlflow.log_param(
+            "batch_size",
+            loader.batch_size,
+        )
+
+        mlflow.log_param(
+            "learning_rate",
+            LEARNING_RATE,
+        )
+
+        mlflow.log_param(
+            "patch_size",
+            PATCH_SIZE,
+        )
+
+        mlflow.log_param(
+            "loss",
+            LOSS_NAME,
+        )
 
         for epoch in range(EPOCHS):
 
@@ -111,11 +152,13 @@ def train(limit):
                     non_blocking=True,
                 )
 
-                optimizer.zero_grad(set_to_none=True)
+                optimizer.zero_grad(
+                    set_to_none=True,
+                )
 
                 with torch.autocast(
-                    device_type="cuda",
-                    enabled=False,
+                    device_type=DEVICE.type,
+                    enabled=DEVICE.type == "cuda",
                 ):
 
                     output = model(images)
@@ -126,30 +169,39 @@ def train(limit):
                     )
 
                 scaler.scale(loss).backward()
+
                 scaler.step(optimizer)
+
                 scaler.update()
 
                 epoch_loss += loss.item()
 
                 global_step += 1
 
-                if global_step % 50 == 0:
+                if global_step % LOG_EVERY_STEPS == 0:
 
                     model.eval()
 
                     with torch.no_grad():
 
-                        quick_output = model(quick_images)
+                        quick_output = model(
+                            monitor_batch
+                        )
 
                         quick_loss = criterion(
                             quick_output,
-                            quick_images,
+                            monitor_batch,
                         ).item()
 
-                        quick_metrics = metrics(
+                        quick_rmse = compute_rmse(
                             quick_output,
-                            quick_images,
+                            monitor_batch,
                         )
+
+                        quick_mae = mae(
+                            quick_output,
+                            monitor_batch,
+                        ).item()
 
                     writer.writerow(
                         {
@@ -158,8 +210,8 @@ def train(limit):
                             "batch_in_epoch": batch_idx + 1,
                             "train_loss": loss.item(),
                             "val_loss_quick": quick_loss,
-                            "val_rmse_quick": quick_metrics["rmse"],
-                            "val_nrmse_quick": quick_metrics["overall_score"],
+                            "val_rmse_quick": quick_rmse,
+                            "val_mae_quick": quick_mae,
                         }
                     )
 
@@ -179,13 +231,13 @@ def train(limit):
 
                     mlflow.log_metric(
                         "val_rmse_quick",
-                        quick_metrics["rmse"],
+                        quick_rmse,
                         step=global_step,
                     )
 
                     mlflow.log_metric(
-                        "val_nrmse_quick",
-                        quick_metrics["overall_score"],
+                        "val_mae_quick",
+                        quick_mae,
                         step=global_step,
                     )
 
@@ -197,31 +249,24 @@ def train(limit):
 
             with torch.no_grad():
 
-                output = model(quick_images)
-
-                result = metrics(
-                    output,
-                    quick_images,
+                output = model(
+                    monitor_batch,
                 )
 
-            if first:
-
-                mlflow.log_param(
-                    "input_shape",
-                    str(model.input_shape),
-                )
-
-                mlflow.log_param(
-                    "latent_shape",
-                    str(model.latent_shape),
-                )
-
-                mlflow.log_param(
-                    "compression_ratio",
-                    model.compression_ratio,
-                )
-
-                first = False
+                result = {
+                    "rmse": compute_rmse(
+                        output,
+                        monitor_batch,
+                    ),
+                    "mae": mae(
+                        output,
+                        monitor_batch,
+                    ).item(),
+                    "psnr": psnr(
+                        output,
+                        monitor_batch,
+                    ).item(),
+                }
 
             mlflow.log_metric(
                 "loss",
@@ -240,28 +285,14 @@ def train(limit):
             print(
                 f"[{epoch + 1:03d}/{EPOCHS}] "
                 f"Loss={epoch_loss:.6f} | "
-                f"Overall={result['overall_score']:.5f} | "
-                f"Surface={result['surface_score']:.5f} | "
-                f"Pressure={result['pressure_score']:.5f} | "
-                f"LR={scheduler.get_last_lr()[0]:.2e} | "
                 f"RMSE={result['rmse']:.5f} | "
+                f"MAE={result['mae']:.5f} | "
                 f"PSNR={result['psnr']:.2f} | "
+                f"LR={scheduler.get_last_lr()[0]:.2e} | "
                 f"{time.time() - start:.1f}s"
             )
 
             scheduler.step()
-
-            if result["overall_score"] < best_score:
-
-                best_score = result["overall_score"]
-
-                torch.save(
-                    model.state_dict(),
-                    os.path.join(
-                        MODELS_DIR,
-                        "best_autoencoder.pth",
-                    ),
-                )
 
         csv_file.close()
 
@@ -276,11 +307,7 @@ def train(limit):
 
 if __name__ == "__main__":
 
-    EXPERIMENTS = [
-        512,
-    ]
-
-    for limit in EXPERIMENTS:
+    for limit in EXPERIMENT_DATASET_SIZES:
 
         print("\n" + "=" * 70)
         print(f"DATASET SIZE: {limit}")

@@ -1,25 +1,47 @@
 # Python
 __pycache__/
 *.py[cod]
-*.so
-*.egg-info/
+*.pyo
+*.pyd
+
+# Virtualenv
 .venv/
 venv/
-env/
 
-# IDE
+# VS Code
 .vscode/
-.idea/
 
-.pytest_cache/
+# DevContainer
+.devcontainer/
 
-era5_28ch_0p25_6h.zarr/
-
-predictions/
-
+# MLflow
+mlruns/
 mlflow.db
-results/
-*.png
-*.jpg
-*.zarr/
-*.nc
+
+# Logs
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python env
+.env
+
+# PyTorch
+*.pt
+*.pth
+
+
+
+# Cache
+.cache/
+
+*.zip
+
+data/
+
+results/bitstreams/

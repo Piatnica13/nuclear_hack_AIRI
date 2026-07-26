@@ -12,7 +12,7 @@ URL = (
 OUT = "era5_28ch_0p25_6h.zarr"
 INDICES = "indices2048.npy"
 
-TOTAL = 512
+TOTAL = 32
 BATCH = 32
 
 LEVELS = [1000, 925, 850, 700]
@@ -46,7 +46,7 @@ ds = xr.open_zarr(
 )
 
 ds = ds.sel(
-    time=slice("2020-01-01", "2020-12-31")
+    time=slice("2021-01-01", "2021-12-31")
 )
 
 print("Frames available:", ds.time.size)

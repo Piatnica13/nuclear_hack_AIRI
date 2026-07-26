@@ -1,13 +1,12 @@
 import torch
 import torch.nn as nn
 
-from config import IN_CHANNELS
-
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
-BASE = 48
-BOTTLENECK = 128
-
+from config import (
+    IN_CHANNELS,
+    BASE_CHANNELS,
+    LATENT_CHANNELS,
+    NUM_RESIDUAL_BLOCKS,
+)
 
 
 class ConvBlock(nn.Module):
@@ -108,8 +107,7 @@ class Up(nn.Module):
 
             nn.Upsample(
                 scale_factor=2,
-                mode="bilinear",
-                align_corners=False,
+                mode="nearest",
             ),
 
             nn.Conv2d(
@@ -199,141 +197,87 @@ class AutoEncoder(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.input_shape = None
-        self.latent_shape = None
-
-        self.input_elements = None
-        self.latent_elements = None
-
-        self.compression_ratio = None
-
         self.enc0 = ConvBlock(
             IN_CHANNELS,
-            BASE,
+            BASE_CHANNELS,
         )
 
         self.enc1 = EncoderBlock(
-            BASE,
-            BASE * 2,
+            BASE_CHANNELS,
+            BASE_CHANNELS * 2,
         )
 
         self.enc2 = EncoderBlock(
-            BASE * 2,
-            BASE * 4,
+            BASE_CHANNELS * 2,
+            BASE_CHANNELS * 4,
         )
 
         self.enc3 = EncoderBlock(
-            BASE * 4,
-            BOTTLENECK,
+            BASE_CHANNELS * 4,
+            LATENT_CHANNELS,
         )
 
         self.enc4 = EncoderBlock(
-            BOTTLENECK,
-            BOTTLENECK,
+            LATENT_CHANNELS,
+            LATENT_CHANNELS,
         )
 
         self.bottleneck = nn.Sequential(
 
-            ResidualBlock(BOTTLENECK),
-            ResidualBlock(BOTTLENECK),
-            ResidualBlock(BOTTLENECK),
-            ResidualBlock(BOTTLENECK),
-            ResidualBlock(BOTTLENECK),
+            *[
+                ResidualBlock(LATENT_CHANNELS)
+                for _ in range(NUM_RESIDUAL_BLOCKS)
+            ]
 
         )
 
         self.dec4 = Up(
-            BOTTLENECK,
-            BOTTLENECK,
+            LATENT_CHANNELS,
+            LATENT_CHANNELS,
         )
 
         self.dec3 = Up(
-            BOTTLENECK,
-            BASE * 4,
+            LATENT_CHANNELS,
+            BASE_CHANNELS * 4,
         )
 
         self.dec2 = Up(
-            BASE * 4,
-            BASE * 2,
+            BASE_CHANNELS * 4,
+            BASE_CHANNELS * 2,
         )
 
         self.dec1 = Up(
-            BASE * 2,
-            BASE,
+            BASE_CHANNELS * 2,
+            BASE_CHANNELS,
         )
 
         self.head = nn.Conv2d(
-            BASE,
+            BASE_CHANNELS,
             IN_CHANNELS,
             kernel_size=1,
         )
 
-        self._printed = False
-
     def forward(self, x):
 
-        identity = x
-    
+        input_tensor = x
+
         skip = self.enc0(x)
-    
+
         x = self.enc1(skip)
         x = self.enc2(x)
         x = self.enc3(x)
         x = self.enc4(x)
-    
+
         latent = self.bottleneck(x)
-    
+
         x = self.dec4(latent)
         x = self.dec3(x)
         x = self.dec2(x)
         x = self.dec1(x)
-    
+
         x = x + skip
-    
+
         reconstruction = self.head(x)
-        reconstruction = reconstruction + identity
-    
-
-        if not self._printed:
-
-            self.input_shape = tuple(identity.shape[1:])
-            self.latent_shape = tuple(latent.shape[1:])
-
-            self.input_elements = (
-                identity.shape[1]
-                * identity.shape[2]
-                * identity.shape[3]
-            )
-
-            self.latent_elements = (
-                latent.shape[1]
-                * latent.shape[2]
-                * latent.shape[3]
-            )
-
-            self.compression_ratio = (
-                self.input_elements
-                / self.latent_elements
-            )
-
-            params = sum(
-                p.numel()
-                for p in self.parameters()
-                if p.requires_grad
-            )
-
-            print("=" * 60)
-            print("AUTOENCODER")
-            print("=" * 60)
-            print(f"Device            : {DEVICE}")
-            print(f"Trainable params  : {params:,}")
-            print(f"Input shape       : {self.input_shape}")
-            print(f"Latent shape      : {self.latent_shape}")
-            print(f"Input elements    : {self.input_elements}")
-            print(f"Latent elements   : {self.latent_elements}")
-            print(f"Compression ratio : {self.compression_ratio:.2f}x")
-            print("=" * 60)
-
-            self._printed = True
+        reconstruction = reconstruction + input_tensor
 
         return reconstruction

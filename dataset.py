@@ -7,13 +7,28 @@ from torch.utils.data import Dataset, DataLoader
 
 from config import (
     DATASET_PATH,
+    SURFACE_VARIABLES,
+    PRESSURE_VARIABLES,
+    PRESSURE_LEVELS,
+    CHANNEL_MEANS,
+    CHANNEL_STDS,
+    IN_CHANNELS,
+    BATCH_SIZE,
+    PATCH_SIZE,
 )
 
 
+def create_dataloader(
+    train=True,
+    limit=None,
+    batch_size=BATCH_SIZE,
+):
 
-def create_dataloader(limit=None, batch_size=1):
-
-    dataset = TestDataset()
+    dataset = (
+        TrainDataset()
+        if train
+        else TestDataset()
+    )
 
     if limit is not None:
         dataset.length = min(limit, dataset.length)
@@ -21,104 +36,50 @@ def create_dataloader(limit=None, batch_size=1):
     loader = DataLoader(
         dataset,
         batch_size=batch_size,
-        shuffle=False,
+        shuffle=train,
         num_workers=0,
-        pin_memory=True,
+        pin_memory=torch.cuda.is_available(),   # <-- изменение
     )
 
     return dataset, loader
 
 
-class TestDataset(Dataset):
+class BaseDataset(Dataset):
 
-    def __init__(self, dataset_path=DATASET_PATH):
+    def __init__(
+        self,
+        dataset_path=DATASET_PATH,
+    ):
 
-        print("Opening test dataset...")
+        print(f"Opening dataset: {dataset_path}")
 
-        print("DATASET_PATH =", dataset_path)
-        print("Exists =", os.path.exists(dataset_path))
-        print("Contents =", os.listdir(dataset_path)[:10])
+        if not os.path.exists(dataset_path):
+            raise FileNotFoundError(dataset_path)
 
         self.ds = xr.open_zarr(
             dataset_path,
             consolidated=False,
         )
 
-        self.surface = [
-            "2m_temperature",
-            "mean_sea_level_pressure",
-            "10m_u_component_of_wind",
-            "10m_v_component_of_wind",
-            "total_precipitation_6hr",
-            "sea_surface_temperature",
-            "total_column_water_vapour",
-            "total_cloud_cover",
-        ]
-
-        self.pressure = [
-            "temperature",
-            "u_component_of_wind",
-            "v_component_of_wind",
-            "geopotential",
-            "specific_humidity",
-        ]
-
-        self.levels = [1000, 925, 850, 700]
-
         self.length = self.ds.time.size
 
-        self.means = torch.tensor([
-            280.0,
-            101325.0,
-            0.0,
-            0.0,
-            0.0002,
-            290.0,
-            25.0,
-            0.5,
+        self.means = CHANNEL_MEANS.view(-1, 1, 1)
+        self.stds = CHANNEL_STDS.view(-1, 1, 1)
 
-            270.0, 265.0, 260.0, 250.0,
-
-            0.0, 0.0, 0.0, 0.0,
-
-            0.0, 0.0, 0.0, 0.0,
-
-            40000.0, 42000.0, 45000.0, 48000.0,
-
-            0.004, 0.003, 0.002, 0.001,
-        ]).view(-1, 1, 1)
-
-        self.stds = torch.tensor([
-            15.0,
-            2500.0,
-            15.0,
-            15.0,
-            0.002,
-            15.0,
-            15.0,
-            0.3,
-
-            18.0, 18.0, 18.0, 18.0,
-
-            20.0, 20.0, 20.0, 20.0,
-
-            20.0, 20.0, 20.0, 20.0,
-
-            3000.0, 3000.0, 3000.0, 3000.0,
-
-            0.003, 0.003, 0.003, 0.003,
-        ]).view(-1, 1, 1)
-
-        print(f"Test samples: {self.length}")
+        print(f"Samples: {self.length}")
 
     def __len__(self):
         return self.length
 
-    def __getitem__(self, idx):
+    def load_sample(self, idx):
 
         channels = []
 
-        for var in self.surface:
+        # --------------------------
+        # Surface variables
+        # --------------------------
+
+        for var in SURFACE_VARIABLES:
 
             data = (
                 self.ds[var]
@@ -128,11 +89,15 @@ class TestDataset(Dataset):
 
             channels.append(data)
 
-        for var in self.pressure:
+        # --------------------------
+        # Pressure variables
+        # --------------------------
+
+        for var in PRESSURE_VARIABLES:
 
             data = (
                 self.ds[var]
-                .sel(level=self.levels)
+                .sel(level=PRESSURE_LEVELS)
                 .isel(time=idx)
                 .values
             )
@@ -140,6 +105,11 @@ class TestDataset(Dataset):
             channels.extend(data)
 
         sample = np.stack(channels)
+
+        assert sample.shape[0] == IN_CHANNELS, (
+            f"Expected {IN_CHANNELS} channels, "
+            f"got {sample.shape[0]}"
+        )
 
         sample = np.nan_to_num(
             sample,
@@ -159,6 +129,50 @@ class TestDataset(Dataset):
             neginf=0.0,
         )
 
-        sample = sample[:, :720, :]
+        # -------------------------------------------------------
+        # ERA5 0.25° содержит 721 строку.
+        # Для соревнования используем общую сетку 720×1440.
+        # -------------------------------------------------------
+        sample = sample[:, :720, :]     # <-- оставить
+
+        return sample.contiguous()      # <-- изменение
+
+
+class TrainDataset(BaseDataset):
+
+    def __getitem__(self, idx):
+
+        sample = self.load_sample(idx)
+
+        height, width = sample.shape[1:]
+
+        top = torch.randint(
+            0,
+            height - PATCH_SIZE + 1,
+            (1,),
+        ).item()
+
+        left = torch.randint(
+            0,
+            width - PATCH_SIZE + 1,
+            (1,),
+        ).item()
+
+        sample = sample[
+            :,
+            top:top + PATCH_SIZE,
+            left:left + PATCH_SIZE,
+        ]
+
+        return sample, sample
+
+
+class TestDataset(BaseDataset):
+
+    def __getitem__(self, idx):
+
+        sample = self.load_sample(idx)
+
+        sample = sample[:, :720, :].contiguous()
 
         return sample, sample
